@@ -10,12 +10,21 @@ header{background:linear-gradient(135deg,#0b5ed7,#123b7a);color:white;padding:28
 .logo{font-size:30px;font-weight:800}.tag{opacity:.9;margin-top:8px}
 main{max-width:620px;margin:-20px auto 30px;padding:0 16px}.card{background:white;border-radius:20px;padding:20px;margin:14px 0;box-shadow:0 5px 20px #00000010}
 h2{margin-top:0;font-size:20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-button,.option{border:0;border-radius:14px;padding:15px;font-size:16px;cursor:pointer}
+button,.option{border:0;border-radius:14px;padding:15px;font-size:16px;cursor:pointer;font-family:inherit}
 .option{background:#eef4ff;color:#173d78;border:1px solid #dce8ff}.option.selected{background:#0b5ed7;color:white}
 .primary{width:100%;background:#0b5ed7;color:white;margin-top:14px}.secondary{width:100%;background:#edf1f7;color:#173d78;margin-top:10px}
-label{display:block;margin:12px 0 6px;font-weight:bold}input,textarea{width:100%;padding:13px;border:1px solid #d8e0eb;border-radius:12px;font-size:16px}textarea{min-height:90px;resize:vertical}
+.primary:disabled{opacity:.6}
+label{display:block;margin:12px 0 6px;font-weight:bold}input,textarea{width:100%;padding:13px;border:1px solid #d8e0eb;border-radius:12px;font-size:16px;font-family:inherit}textarea{min-height:90px;resize:vertical}
 .hidden{display:none}.success{text-align:center}.order{font-size:24px;font-weight:bold;color:#0b5ed7;margin:15px}
 .small{font-size:13px;color:#68758a}
+.item{border:1px solid #e3eaf4;border-radius:14px;padding:14px;margin-top:12px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.badge{font-size:12px;font-weight:bold;padding:3px 12px;border-radius:99px;background:#fff1d6;color:#8a5a00}
+.badge.done,.badge.delivered{background:#dcf5e6;color:#17663a}
+.badge.inspecting{background:#e0ecff;color:#0b5ed7}
+.act{padding:9px 16px;font-size:14px;background:#0b5ed7;color:white;margin-top:8px}
+.link{background:none;color:#68758a;font-size:13px;width:100%;margin-top:6px;padding:8px}
+a{color:#0b5ed7}
 </style>
 </head>
 <body>
@@ -25,18 +34,20 @@ label{display:block;margin:12px 0 6px;font-weight:bold}input,textarea{width:100%
 <h2>محتاج فني؟</h2>
 <p>اطلب صيانة الكمبيوتر أو اللابتوب أو الطابعة بسهولة.</p>
 <button class="primary" onclick="show('request')">طلب صيانة</button>
+<button class="secondary" onclick="show('mine')">طلباتي</button>
+<button class="link" onclick="show('admin')">دخول الفني</button>
 </section>
 
 <section id="request" class="card hidden">
 <h2>1. اختر الجهاز</h2>
-<div class="grid" id="devices">
+<div class="grid">
 <button class="option" onclick="select(this,'device','كمبيوتر')">🖥️ كمبيوتر</button>
 <button class="option" onclick="select(this,'device','لابتوب')">💻 لابتوب</button>
 <button class="option" onclick="select(this,'device','طابعة')">🖨️ طابعة</button>
 <button class="option" onclick="select(this,'device','أخرى')">🔧 أخرى</button>
 </div>
 <h2 style="margin-top:22px">2. نوع المشكلة</h2>
-<div class="grid" id="problems">
+<div class="grid">
 <button class="option" onclick="select(this,'problem','سوفت وير')">⚙️ سوفت وير</button>
 <button class="option" onclick="select(this,'problem','هاردوير')">🧰 هاردوير</button>
 <button class="option" onclick="select(this,'problem','شبكة / إنترنت')">🌐 شبكة</button>
@@ -47,11 +58,12 @@ label{display:block;margin:12px 0 6px;font-weight:bold}input,textarea{width:100%
 <button class="option" onclick="select(this,'service','زيارة منزلية')">🏠 زيارة منزلية</button>
 <button class="option" onclick="select(this,'service','تسليم الجهاز')">📦 تسليم الجهاز</button>
 </div>
+<div id="addrBox" class="hidden"><label>العنوان</label><input id="address" autocomplete="street-address" placeholder="المنطقة، الشارع، رقم العمارة"></div>
 <label>رقم الهاتف</label>
 <input id="phone" type="tel" placeholder="01xxxxxxxxx">
 <label>وصف المشكلة</label>
 <textarea id="desc" placeholder="اكتب باختصار ماذا يحدث للجهاز..."></textarea>
-<button class="primary" onclick="submitOrder()">تأكيد طلب الصيانة</button>
+<button class="primary" id="sendBtn" onclick="submitOrder()">تأكيد طلب الصيانة</button>
 <button class="secondary" onclick="show('home')">رجوع</button>
 </section>
 
@@ -59,19 +71,89 @@ label{display:block;margin:12px 0 6px;font-weight:bold}input,textarea{width:100%
 <h2>تم إرسال طلبك ✅</h2>
 <p>رقم طلبك:</p><div class="order" id="orderNo"></div>
 <p>سنتواصل معك لتأكيد تفاصيل الخدمة.</p>
-<button class="primary" onclick="show('home')">العودة للرئيسية</button>
+<button class="primary" onclick="show('mine')">متابعة طلباتي</button>
+<button class="secondary" onclick="show('home')">العودة للرئيسية</button>
+</section>
+
+<section id="mine" class="card hidden">
+<h2>طلباتي</h2><div id="mineBody" class="small">جاري التحميل...</div>
+<button class="secondary" onclick="show('home')">رجوع</button>
+</section>
+
+<section id="admin" class="card hidden">
+<h2>لوحة الفني</h2><div id="adminBody" class="small">جاري التحميل...</div>
+<button class="secondary" onclick="show('home')">رجوع</button>
 </section>
 </main>
-<script>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getFirestore,collection,addDoc,getDocs,updateDoc,doc,query,where,setDoc,getDoc,deleteDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getAuth,signInAnonymously,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+const firebaseConfig={apiKey:"AIzaSyDs62QE6ct0cPlZXwChis6si2UFeztokVw",authDomain:"salhly-b5f70.firebaseapp.com",projectId:"salhly-b5f70",storageBucket:"salhly-b5f70.firebasestorage.app",messagingSenderId:"146732585422",appId:"1:146732585422:web:f9efc006d99096f2c31b9f"};
+const fbApp=initializeApp(firebaseConfig), fs=getFirestore(fbApp), auth=getAuth(fbApp), COL='requests';
+let admin=false;
+const ready=new Promise(res=>onAuthStateChanged(auth,u=>{ if(u) res(u); else signInAnonymously(auth).catch(()=>{}); })).then(async u=>{ try{ admin=(await getDoc(doc(fs,'admins',u.uid))).exists(); }catch(e){} return u; });
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const STATUS={new:'جديد',inspecting:'قيد الفحص',done:'تم الإصلاح',delivered:'تم التسليم'};
+const NEXT={new:'inspecting',inspecting:'done',done:'delivered'};
+const NEXT_LABEL={new:'ابدأ الفحص',inspecting:'تم الإصلاح',done:'تم التسليم'};
 const data={};
-function show(id){['home','request','done'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));scrollTo(0,0)}
-function select(el,key,val){data[key]=val;el.parentElement.querySelectorAll('.option').forEach(b=>b.classList.remove('selected'));el.classList.add('selected')}
-function submitOrder(){
- data.phone=document.getElementById('phone').value.trim(); data.desc=document.getElementById('desc').value.trim();
- if(!data.device||!data.problem||!data.service||!data.phone){alert('من فضلك أكمل نوع الجهاز والمشكلة وطريقة الخدمة ورقم الهاتف.');return}
- const no='SL-'+Date.now().toString().slice(-6);document.getElementById('orderNo').textContent=no;show('done');
- console.log('طلب صيانة تجريبي',data);
+const PAGES=['home','request','done','mine','admin'];
+function show(id){PAGES.forEach(x=>$(x).classList.toggle('hidden',x!==id));scrollTo(0,0);if(id==='mine')loadMine();if(id==='admin')loadAdmin();}
+function select(el,key,val){data[key]=val;el.parentElement.querySelectorAll('.option').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');if(key==='service')$('addrBox').classList.toggle('hidden',val!=='زيارة منزلية');}
+async function submitOrder(){
+  const phone=$('phone').value.trim(), desc=$('desc').value.trim(), address=$('address').value.trim();
+  if(!data.device||!data.problem||!data.service||!phone){alert('من فضلك أكمل نوع الجهاز والمشكلة وطريقة الخدمة ورقم الهاتف.');return}
+  if(data.service==='زيارة منزلية'&&!address){alert('اكتب العنوان عشان الفني يوصلك.');return}
+  const no='SL-'+Date.now().toString().slice(-6), btn=$('sendBtn'); btn.disabled=true;
+  try{
+    await ready;
+    await addDoc(collection(fs,COL),{device:data.device,problem:data.problem,service:data.service,phone,desc,address,orderNo:no,status:'new',createdAt:Date.now(),uid:auth.currentUser.uid});
+    $('orderNo').textContent=no; show('done');
+    Object.keys(data).forEach(k=>delete data[k]);
+    document.querySelectorAll('.option.selected').forEach(b=>b.classList.remove('selected'));
+    ['phone','desc','address'].forEach(i=>$(i).value=''); $('addrBox').classList.add('hidden');
+  }catch(e){alert('تعذر إرسال الطلب، جرّب تاني.');}
+  btn.disabled=false;
 }
+function item(r,isAdmin){
+  return `<div class="item"><div class="row"><b>${esc(r.orderNo)}</b><span class="badge ${r.status}">${STATUS[r.status]||''}</span></div>
+  <div class="small">${esc(r.device)} · ${esc(r.problem)} · ${esc(r.service)} · ${new Date(r.createdAt).toLocaleDateString('ar-EG')}</div>
+  ${r.desc?`<p>${esc(r.desc)}</p>`:''}
+  ${isAdmin?`<div class="small"><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a>${r.address?' — '+esc(r.address):''}</div>${NEXT[r.status]?`<button class="act" onclick="nextStatus('${r.id}','${r.status}')">${NEXT_LABEL[r.status]}</button>`:''}`:''}</div>`;
+}
+async function fetchAll(mineOnly){
+  await ready;
+  const q=(admin&&!mineOnly)?collection(fs,COL):query(collection(fs,COL),where('uid','==',auth.currentUser.uid));
+  const g=await getDocs(q);
+  return g.docs.map(x=>({...x.data(),id:x.id})).sort((a,b)=>b.createdAt-a.createdAt);
+}
+async function loadMine(){
+  $('mineBody').textContent='جاري التحميل...';
+  try{const all=await fetchAll(true);$('mineBody').innerHTML=all.length?all.map(r=>item(r,false)).join(''):'مفيش طلبات لسه. اطلب صيانة وهتلاقيها هنا.';}
+  catch(e){$('mineBody').textContent='تعذر تحميل الطلبات.';}
+}
+async function loadAdmin(){
+  const b=$('adminBody'); b.textContent='جاري التحميل...'; await ready;
+  if(!admin){b.innerHTML=`<label for="pin">رمز الفني</label><input id="pin" type="password" autocomplete="off"><button class="primary" onclick="adminLogin()">دخول</button>`;return;}
+  try{
+    const all=await fetchAll(false), c=k=>all.filter(r=>r.status===k).length;
+    b.innerHTML=`<div class="small">${Object.keys(STATUS).map(k=>STATUS[k]+': '+c(k)).join(' | ')}</div>`+(all.length?all.map(r=>item(r,true)).join(''):'<p>مفيش طلبات لسه.</p>')+`<button class="link" onclick="adminLogout()">خروج الفني</button>`;
+  }catch(e){b.textContent='تعذر تحميل الطلبات.';}
+}
+async function adminLogin(){
+  try{await setDoc(doc(fs,'admins',auth.currentUser.uid),{code:$('pin').value.trim()});admin=true;loadAdmin();}
+  catch(e){alert('الرمز غلط');}
+}
+async function adminLogout(){
+  try{await deleteDoc(doc(fs,'admins',auth.currentUser.uid));}catch(e){}
+  admin=false; show('home');
+}
+async function nextStatus(id,cur){
+  try{await updateDoc(doc(fs,COL,id),{status:NEXT[cur]});loadAdmin();}catch(e){alert('تعذر تحديث الحالة.');}
+}
+Object.assign(window,{show,select,submitOrder,adminLogin,adminLogout,nextStatus});
 </script>
 </body>
 </html>

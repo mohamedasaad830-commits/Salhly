@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>صلّحلي</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f8fc;color:#14213d}
+header{background:linear-gradient(135deg,#0b5ed7,#123b7a);color:white;padding:28px 20px 42px;border-radius:0 0 28px 28px}
+.logo{font-size:30px;font-weight:800}.tag{opacity:.9;margin-top:8px}
+main{max-width:620px;margin:-20px auto 30px;padding:0 16px}.card{background:white;border-radius:20px;padding:20px;margin:14px 0;box-shadow:0 5px 20px #00000010}
+h2{margin-top:0;font-size:20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button,.option{border:0;border-radius:14px;padding:15px;font-size:16px;cursor:pointer}
+.option{background:#eef4ff;color:#173d78;border:1px solid #dce8ff}.option.selected{background:#0b5ed7;color:white}
+.primary{width:100%;background:#0b5ed7;color:white;margin-top:14px}.secondary{width:100%;background:#edf1f7;color:#173d78;margin-top:10px}
+label{display:block;margin:12px 0 6px;font-weight:bold}input,textarea{width:100%;padding:13px;border:1px solid #d8e0eb;border-radius:12px;font-size:16px}textarea{min-height:90px;resize:vertical}
+.hidden{display:none}.success{text-align:center}.order{font-size:24px;font-weight:bold;color:#0b5ed7;margin:15px}
+.small{font-size:13px;color:#68758a}
+</style>
+</head>
+<body>
+<header><div class="logo">🔧 صلّحلي</div><div class="tag">مشكلتك علينا… وجهازك يرجع يشتغل</div></header>
+<main>
+<section id="home" class="card">
+<h2>محتاج فني؟</h2>
+<p>اطلب صيانة الكمبيوتر أو اللابتوب أو الطابعة بسهولة.</p>
+<button class="primary" onclick="show('request')">طلب صيانة</button>
+</section>
+
+<section id="request" class="card hidden">
+<h2>1. اختر الجهاز</h2>
+<div class="grid" id="devices">
+<button class="option" onclick="select(this,'device','كمبيوتر')">🖥️ كمبيوتر</button>
+<button class="option" onclick="select(this,'device','لابتوب')">💻 لابتوب</button>
+<button class="option" onclick="select(this,'device','طابعة')">🖨️ طابعة</button>
+<button class="option" onclick="select(this,'device','أخرى')">🔧 أخرى</button>
+</div>
+<h2 style="margin-top:22px">2. نوع المشكلة</h2>
+<div class="grid" id="problems">
+<button class="option" onclick="select(this,'problem','سوفت وير')">⚙️ سوفت وير</button>
+<button class="option" onclick="select(this,'problem','هاردوير')">🧰 هاردوير</button>
+<button class="option" onclick="select(this,'problem','شبكة / إنترنت')">🌐 شبكة</button>
+<button class="option" onclick="select(this,'problem','لا أعرف')">❓ لا أعرف</button>
+</div>
+<h2 style="margin-top:22px">3. طريقة الخدمة</h2>
+<div class="grid">
+<button class="option" onclick="select(this,'service','زيارة منزلية')">🏠 زيارة منزلية</button>
+<button class="option" onclick="select(this,'service','تسليم الجهاز')">📦 تسليم الجهاز</button>
+</div>
+<label>رقم الهاتف</label>
+<input id="phone" type="tel" placeholder="01xxxxxxxxx">
+<label>وصف المشكلة</label>
+<textarea id="desc" placeholder="اكتب باختصار ماذا يحدث للجهاز..."></textarea>
+<button class="primary" onclick="submitOrder()">تأكيد طلب الصيانة</button>
+<button class="secondary" onclick="show('home')">رجوع</button>
+</section>
+
+<section id="done" class="card hidden success">
+<h2>تم إرسال طلبك ✅</h2>
+<p>رقم طلبك:</p><div class="order" id="orderNo"></div>
+<p>سنتواصل معك لتأكيد تفاصيل الخدمة.</p>
+<button class="primary" onclick="show('home')">العودة للرئيسية</button>
+</section>
+</main>
+<script>
+const data={};
+function show(id){['home','request','done'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));scrollTo(0,0)}
+function select(el,key,val){data[key]=val;el.parentElement.querySelectorAll('.option').forEach(b=>b.classList.remove('selected'));el.classList.add('selected')}
+function submitOrder(){
+ data.phone=document.getElementById('phone').value.trim(); data.desc=document.getElementById('desc').value.trim();
+ if(!data.device||!data.problem||!data.service||!data.phone){alert('من فضلك أكمل نوع الجهاز والمشكلة وطريقة الخدمة ورقم الهاتف.');return}
+ const no='SL-'+Date.now().toString().slice(-6);document.getElementById('orderNo').textContent=no;show('done');
+ console.log('طلب صيانة تجريبي',data);
+}
+</script>
+</body>
+</html>

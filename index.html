@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>صلّحلي</title>
+<meta name="theme-color" content="#0b5ed7">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f8fc;color:#14213d}
 header{background:linear-gradient(135deg,#0b5ed7,#123b7a);color:white;padding:28px 20px 42px;border-radius:0 0 28px 28px}
@@ -25,17 +29,33 @@ label{display:block;margin:12px 0 6px;font-weight:bold}input,textarea{width:100%
 .act{padding:9px 16px;font-size:14px;background:#0b5ed7;color:white;margin-top:8px}
 .link{background:none;color:#68758a;font-size:13px;width:100%;margin-top:6px;padding:8px}
 a{color:#0b5ed7}
+header{background:linear-gradient(135deg,#0b5ed7,#5b3fd6 60%,#7c3aed);position:relative;overflow:hidden}
+.hero{display:flex;gap:12px;margin-top:18px;font-size:30px}
+.hero span{animation:float 3s ease-in-out infinite;background:#ffffff22;border-radius:14px;padding:6px 10px}
+.hero span:nth-child(2){animation-delay:.4s}.hero span:nth-child(3){animation-delay:.8s}.hero span:nth-child(4){animation-delay:1.2s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes pop{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.card:not(.hidden){animation:pop .35s ease}
+.primary{background:linear-gradient(135deg,#0b5ed7,#6d3ee8);box-shadow:0 8px 20px #0b5ed755;font-weight:bold}
+.wa{display:block;text-align:center;text-decoration:none;background:#25d366;color:#fff;border-radius:14px;padding:14px;margin-top:10px;font-weight:bold}
+button:active,.wa:active{transform:scale(.97)}
+.option{transition:transform .15s,background .15s}.option.selected{background:linear-gradient(135deg,#0b5ed7,#6d3ee8);transform:scale(1.04);box-shadow:0 6px 16px #0b5ed744}
+.steps{display:flex;gap:4px;margin-top:10px}.steps i{flex:1;text-align:center;font-style:normal;font-size:11px;padding:5px 0;border-radius:8px;background:#edf1f7;color:#68758a}
+.steps i.on{background:linear-gradient(135deg,#0b5ed7,#6d3ee8);color:#fff;font-weight:bold}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<header><div class="logo">🔧 صلّحلي</div><div class="tag">مشكلتك علينا… وجهازك يرجع يشتغل</div></header>
+<header><div class="logo">🔧 صلّحلي</div><div class="tag">مشكلتك علينا… وجهازك يرجع يشتغل</div><div class="hero"><span>🖥️</span><span>💻</span><span>🖨️</span><span>🔧</span></div></header>
 <main>
 <section id="home" class="card">
 <h2>محتاج فني؟</h2>
 <p>اطلب صيانة الكمبيوتر أو اللابتوب أو الطابعة بسهولة.</p>
 <button class="primary" onclick="show('request')">طلب صيانة</button>
 <button class="secondary" onclick="show('mine')">طلباتي</button>
+<a class="wa" href="https://wa.me/201007141574" target="_blank" rel="noopener">💬 تواصل معنا واتساب</a>
 <button class="link" onclick="show('admin')">دخول الفني</button>
+<a class="link" style="display:block;text-align:center;text-decoration:none" href="privacy.html">سياسة الخصوصية</a>
 </section>
 
 <section id="request" class="card hidden">
@@ -72,6 +92,7 @@ a{color:#0b5ed7}
 <p>رقم طلبك:</p><div class="order" id="orderNo"></div>
 <p>سنتواصل معك لتأكيد تفاصيل الخدمة.</p>
 <button class="primary" onclick="show('mine')">متابعة طلباتي</button>
+<a class="wa" href="https://wa.me/201007141574" target="_blank" rel="noopener">💬 كلّمنا واتساب</a>
 <button class="secondary" onclick="show('home')">العودة للرئيسية</button>
 </section>
 
@@ -118,9 +139,11 @@ async function submitOrder(){
   btn.disabled=false;
 }
 function item(r,isAdmin){
+  const IDX={new:0,inspecting:1,done:2,delivered:3}[r.status]??0;
   return `<div class="item"><div class="row"><b>${esc(r.orderNo)}</b><span class="badge ${r.status}">${STATUS[r.status]||''}</span></div>
   <div class="small">${esc(r.device)} · ${esc(r.problem)} · ${esc(r.service)} · ${new Date(r.createdAt).toLocaleDateString('ar-EG')}</div>
   ${r.desc?`<p>${esc(r.desc)}</p>`:''}
+  <div class="steps">${['جديد','فحص','إصلاح','تسليم'].map((t,i)=>`<i class="${i<=IDX?'on':''}">${t}</i>`).join('')}</div>
   ${isAdmin?`<div class="small"><a href="tel:${esc(r.phone)}">${esc(r.phone)}</a>${r.address?' — '+esc(r.address):''}</div>${NEXT[r.status]?`<button class="act" onclick="nextStatus('${r.id}','${r.status}')">${NEXT_LABEL[r.status]}</button>`:''}`:''}</div>`;
 }
 async function fetchAll(mineOnly){
@@ -154,6 +177,7 @@ async function nextStatus(id,cur){
   try{await updateDoc(doc(fs,COL,id),{status:NEXT[cur]});loadAdmin();}catch(e){alert('تعذر تحديث الحالة.');}
 }
 Object.assign(window,{show,select,submitOrder,adminLogin,adminLogout,nextStatus});
+if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}
 </script>
 </body>
 </html>
